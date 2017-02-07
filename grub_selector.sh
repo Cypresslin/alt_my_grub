@@ -1,20 +1,44 @@
 #!/bin/bash
-# A small script to help you to boot into a different kernel on your system.
 #
-# Known issue: it does not handle multiple submenus in grub
+# A script that helps you to select a different kernel to boot on your Ubuntu system.
+# https://github.com/Cypresslin/grub_selector
 #
-# Author: Po-Hsu Lin <po-hsu.lin@canonical.com>
-#
+#                              Author: Po-Hsu Lin <po-hsu.lin@canonical.com>
 
 grubcfg="/boot/grub/grub.cfg"
 grubfile="/etc/default/grub"
 end_pattern="### END /etc/grub.d/10_linux ###"
+one_time=false
+
+# Flag parser
+while [[ $# > 0 ]]
+do
+    flag="$1"
+    shift
+    case $flag in
+        --once)
+        echo "Running in one-time task mode"
+        one_time=true
+        shift
+        ;;
+        *)
+        echo "ERROR: Unknown option"
+        echo "Usage: bash grub_selector.sh [options]"
+        echo ""
+        echo "Options:"
+        echo -e "  --once\tBoot to the desired option for next reboot only"
+        exit
+        ;;
+    esac
+done
+
 
 # Find menuentries and submenu, unify the quote and extract the title
-output=`grep -e 'menuentry ' -e 'submenu ' "$grubcfg" |sed "s/'/\"/g" | cut -d '"' -f2`
+rawdata=`grep -e 'menuentry ' -e 'submenu ' "$grubcfg"`
+output=`echo "$rawdata" |sed "s/'/\"/g" | cut -d '"' -f2`
 # Get the line index of submenu
-subidx=`grep -e "menuentry " -e "submenu " "$grubcfg" | grep -n 'submenu ' | awk -F':' '{print $1}'`
-# As grep -n return 1-based number, -1 for 0-based
+subidx=`echo "$rawdata" | grep -n 'submenu ' | awk -F':' '{print $1}'`
+# As grep -n return 1-based number, -1 for 0-based bash array
 subidx=$((subidx-1))
 # The submenu will eventually ends before "### END /etc/grub.d/10_linux ###"
 endidx=`grep -e "menuentry " -e "submenu " -e "$end_pattern" "$grubcfg" | grep -n "$end_pattern" | awk -F':' '{print $1}'`
@@ -53,25 +77,37 @@ else
 fi
 
 if [ $opt -gt $subidx ] && [ $opt -lt $endidx ]; then
-    target="\"${entries[$subidx]}>${entries[$opt]}\""
+    target="'${entries[$subidx]}>${entries[$opt]}'"
 else
-    target="\"${entries[$opt]}\""
+    target="'${entries[$opt]}'"
 fi
 echo "Selected: $target"
-echo "========================================="
+echo "==========================================="
 echo "The following operation needs root access"
-echo "It will first backup $grubfile"
-echo "And change the GRUB_DEFAULT in that file"
-echo "========================================="
+echo "It will backup $grubfile first, and"
+echo "make changes to the GRUB_DEFAULT if needed"
+echo "==========================================="
 read -p "I understand the risk (y/N): " ans
 
 case $ans in
     "Y" | "y")
-        echo "Backing up your grub file to ./grub-bak"
-        cp "$grubfile" ./grub-bak
-        echo "Modifying GRUB_DEFAULT in $grubfile"
-        sudo sed -i "s/GRUB_DEFAULT=.*/GRUB_DEFAULT=$target/" "$grubfile"
-        sudo update-grub
+        grep "^GRUB_DEFAULT=saved" $grubfile > /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Backing up your grub file to ./grub-bak"
+            cp "$grubfile" ./grub-bak
+            echo "Changing GRUB_DEFAULT to 'saved' in $grubfile"
+            sudo sed -i "s/GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/" $grubfile
+            sudo update-grub
+        fi
+        if [ $one_time = true ]; then
+            echo "Setting up one-time task with grub-reboot..."
+            cmd="sudo grub-reboot $target"
+            eval $cmd
+        else
+            echo "Setting up default boot option with grub-set-default..."
+            cmd="sudo grub-set-default $target"
+            eval $cmd
+        fi
         echo "Job done, please reboot now."
         ;;
     *)
