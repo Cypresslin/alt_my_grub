@@ -10,6 +10,13 @@ grubfile="/etc/default/grub"
 end_pattern="### END /etc/grub.d/10_linux ###"
 one_time=false
 
+function filecheck {
+    if [ ! -f $1 ]; then
+        echo "$1 not found, please change the setting"
+        exit 1
+    fi
+}
+
 # Flag parser
 while [[ $# > 0 ]]
 do
@@ -32,7 +39,8 @@ do
     esac
 done
 
-
+filecheck $grubcfg
+filecheck $grubfile
 # Find menuentries and submenu, unify the quote and extract the title
 rawdata=`grep -e 'menuentry ' -e 'submenu ' "$grubcfg"`
 output=`echo "$rawdata" |sed "s/'/\"/g" | cut -d '"' -f2`
