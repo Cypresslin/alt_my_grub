@@ -9,7 +9,7 @@ I found it's a bit unfriendly to do this manually (especially when you are runni
 This tool utilize the grub-reboot and grub-set-default command to help you to achieve this.
 
 ## Usage
-Just download the script, and run it (add `--once` flag for one time task mode):
+Just download the [ZIP archive](https://github.com/Cypresslin/grub_selector/archive/master.zip) or the source from [https://github.com/Cypresslin/grub_selector/](https://github.com/Cypresslin/grub_selector/), and run it (add `--once` flag for one-time task mode, which will take you back to the current kernel on the second reboot):
 
     $ /bin/bash grub_selector.sh --once
     Running in one-time task mode
