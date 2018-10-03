@@ -23,6 +23,11 @@ do
     flag="$1"
     shift
     case $flag in
+        -y | --yes)
+        echo "You won't be asked to answer the 'I understand the risk' question."
+        ans="y"
+        shift
+        ;;
         --once)
         echo "Running in one-time task mode"
         one_time=true
@@ -33,6 +38,7 @@ do
         echo "Usage: bash grub_selector.sh [options]"
         echo ""
         echo "Options:"
+        echo -e "  -y | --yes\tReply YES to the 'I understand the risk' question"
         echo -e "  --once\tBoot to the desired option for next reboot only"
         exit
         ;;
@@ -95,7 +101,11 @@ echo "The following operation needs root access"
 echo "It will backup $grubfile first, and"
 echo "make changes to the GRUB_DEFAULT if needed"
 echo "==========================================="
-read -p "I understand the risk (y/N): " ans
+if [ "$ans" == "y" ]; then
+    echo "YES I understand the risk."
+else
+    read -p "I understand the risk (y/N): " ans
+fi
 
 case $ans in
     "Y" | "y")
