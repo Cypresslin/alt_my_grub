@@ -17,12 +17,24 @@ function filecheck {
     fi
 }
 
+function helpmsg {
+    echo "Usage: bash grub_selector.sh [options]"
+    echo ""
+    echo "Options:"
+    echo -e "  -h | --help\tPrint this help message and exit"
+    echo -e "  -y | --yes\tReply YES to the 'I understand the risk' question"
+    echo -e "  --once\tBoot to the desired option for next reboot only"
+}
+
 # Flag parser
 while [[ $# > 0 ]]
 do
     flag="$1"
-    shift
     case $flag in
+        -h | --help)
+        helpmsg
+        exit 0
+        ;;
         -y | --yes)
         echo "You won't be asked to answer the 'I understand the risk' question."
         ans="y"
@@ -35,12 +47,8 @@ do
         ;;
         *)
         echo "ERROR: Unknown option"
-        echo "Usage: bash grub_selector.sh [options]"
-        echo ""
-        echo "Options:"
-        echo -e "  -y | --yes\tReply YES to the 'I understand the risk' question"
-        echo -e "  --once\tBoot to the desired option for next reboot only"
-        exit
+        helpmsg
+        exit 1
         ;;
     esac
 done
