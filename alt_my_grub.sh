@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # A script that helps you to select a different kernel to boot on your Ubuntu system.
-# https://github.com/Cypresslin/grub_selector
+# https://github.com/Cypresslin/alt_my_grub
 #
 #                              Author: Po-Hsu Lin <po-hsu.lin@canonical.com>
 
@@ -18,7 +18,7 @@ function filecheck {
 }
 
 function helpmsg {
-    echo "Usage: bash grub_selector.sh [options]"
+    echo "Usage: bash alt_my_grub.sh [options]"
     echo ""
     echo "Options:"
     echo -e "  -h | --help\tPrint this help message and exit"
