@@ -21,9 +21,10 @@ function helpmsg {
     echo "Usage: bash alt_my_grub.sh [options]"
     echo ""
     echo "Options:"
-    echo -e "  -h | --help\tPrint this help message and exit"
-    echo -e "  -y | --yes\tReply YES to the 'I understand the risk' question"
-    echo -e "  --once\tBoot to the desired option for next reboot only"
+    echo -e "  -h | --help\t\tPrint this help message and exit"
+    echo -e "  -r | --restore\tRestore the grub backup file"
+    echo -e "  -y | --yes\t\tReply YES to the 'I understand the risk' question"
+    echo -e "  --once\t\tBoot to the desired option for next reboot only"
 }
 
 # Flag parser
@@ -33,6 +34,18 @@ do
     case $flag in
         -h | --help)
         helpmsg
+        exit 0
+        ;;
+        -r | --restore)
+        echo "Trying to restore the grub backup file (grub-bak)"
+        if [ -f grub-bak ] && filecheck $grubfile; then
+            echo "Copy grub-bak to $grubfile"
+            sudo cp grub-bak $grubfile
+            sudo update-grub
+            echo "Job done, please reboot now."
+        else
+            echo "Backup file grub-bak not found, aborted"
+        fi
         exit 0
         ;;
         -y | --yes)
